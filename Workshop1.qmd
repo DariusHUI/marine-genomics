@@ -1,0 +1,19 @@
+---
+title: "Marine Genomics Workshop 1"
+author: "Darius HUISMAN"
+date: "2026-07-08"
+output: 
+ html_document:
+    code_folding: show
+    collapse: no
+    df_print: paged
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 10
+    highlight: textmate
+    theme: spacelab
+    toc: yes
+    toc_float: yes
+editor_options: 
+  chunk_output_type: inline
+---
