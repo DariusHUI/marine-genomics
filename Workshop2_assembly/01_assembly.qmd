@@ -112,6 +112,60 @@ assembly-stats amtp4_20x/assembly.fasta
 
 ## Inspect assembly graphs with Bandage
 
+Conducted in Bandage after downloading the "assembly_graph.gfa" files from both output generated previously (so 2 files, one from "amtp4" and one from "amtp4_20x")
+
+## Check Assembly Quality with QUAST
+
+### Setup a Quast working directory
+```bash
+cd ..
+
+mkdir quast
+cd quast
+```
+ 
+### Prepare assembly data
+
+Make two directories within the quast directory
+```bash
+mkdir flye_asm redbean_asm
+```
+
+Look at the contig sizes in the flye assembly to find the two largest ones
+```bash
+cat ../flye/amtp4_20x/assembly.fasta | bioawk -c fastx '{print $name, length($seq)}' | sort -n -k2
+```
+The largest two found in this case were "contig_59" and "contig_10"
+
+Use samtools to extract these
+```bash
+samtools faidx ../flye/amtp4_20x/assembly.fasta contig_59 contig_10 > flye_asm/vibrio.fasta
+```
+
+Repeat the process for the redbean assembly
+```bash
+cat ../redbean/amtp4_20x.ctg.fa | bioawk -c fastx '{print $name, length($seq)}' | sort -n -k2
+samtools faidx ../redbean/amtp4_20x.ctg.fa ctg1 ctg2 > redbean_asm/vibrio.fasta
+```
+
+Create a symbolic link to the original reads and reference assembly
+```bash
+ln ../flye/amtp4_20x.fastq .
+ln -s /pvol/data/amtp4/reference/vibrio .
+```
+
+### Run QUAST
+```bash
+quast -o quast_vibrio redbean_asm/vibrio.fasta flye_asm/vibrio.fasta -L -t 4 --circos --glimmer -r vibrio/vibrio.fna --features  vibrio/vibrio.gff --nanopore amtp4_20x.fastq
+```
+
+
+
+
+
+
+
+
 
 
 
