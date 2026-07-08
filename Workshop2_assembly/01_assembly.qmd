@@ -159,9 +159,52 @@ ln -s /pvol/data/amtp4/reference/vibrio .
 quast -o quast_vibrio redbean_asm/vibrio.fasta flye_asm/vibrio.fasta -L -t 4 --circos --glimmer -r vibrio/vibrio.fna --features  vibrio/vibrio.gff --nanopore amtp4_20x.fastq
 ```
 
+##Optional: Mystery Repeat Region
 
+Store results in a directory called "repeat"
+```bash
+mkdir ../repeat
+cd ../repeat
+```
 
+### Extract repeat region sequence
 
+### Use prokka to annotate it
+Run prokka on this sequence to see if it contains any transcribed sequences
+```bash
+prokka --outdir prokka --prefix repeat repeat.fasta
+```
+Look at the tsv file that is produced
+```bash
+cat prokka/repeat.tsv
+```
+output :
+locus_tag       ftype   length_bp       gene    EC_number       COG     product
+AMFJKEBI_00001  tRNA    76                              tRNA-Asp(gtc)
+AMFJKEBI_00002  rRNA    111                             5S ribosomal RNA
+AMFJKEBI_00003  rRNA    2878                            23S ribosomal RNA
+AMFJKEBI_00004  tRNA    76                              tRNA-Ala(tgc)
+AMFJKEBI_00005  tRNA    77                              tRNA-Ile(gat)
+AMFJKEBI_00006  rRNA    1549                            16S ribosomal RNA
+
+## Genomic arrangement of repeats
+### Run the alignment
+```bash
+ln -s ../quast/vibrio/vibrio.fna .
+```
+Run minimap2
+```
+minimap2 -x map-ont vibrio.fna repeat.fasta > repeat_vs_genome.paf
+```
+
+### Examine the alignment
+```bash
+head  repeat_vs_genome.paf
+```
+Extract columns specifying the start and end point on the target
+```bash
+cat repeat_vs_genome.paf | grep '^repe' | awk -F '\t' '{print $6,$8,$9}' > repeat_locations.bed
+```
 
 
 
