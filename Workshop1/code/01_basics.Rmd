@@ -1,0 +1,14 @@
+---
+title: "Command Line Basics"
+author: "Darius HUISMAN"
+date: "2026-07-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is a document used to test and learn different commands and understand their outputs, such as "ls",  "cd" and "pwd".
