@@ -1,0 +1,42 @@
+---
+title: "Workshop3"
+author: "Darius HUISMAN"
+format: html
+editor: visual
+---
+
+## Quarto
+
+This file contains the different steps used to complete Workshop 3.
+In this workshop we examined metagenome following these steps:
+1. Examine Reads
+2. Assembly
+3. Basic assembly QC
+4. Binning
+5. Bin assessment
+
+## Step 1: Examine Reads
+
+Create new subdirectory called raw_reads and make a symbolic link to the raw reads file in this directory.
+```bash
+mkdir raw_data
+cd raw_data
+ln -s /pvol/data/metagenome_assembly/reads_R10_0.5.fastq.gz raw_reads.fastq.gz
+```
+
+```bash
+cd ..
+```
+
+Check that your files are correct by using the ls command
+```bash
+ls -lR .
+```
+
+
+
+
+
+
+
+
