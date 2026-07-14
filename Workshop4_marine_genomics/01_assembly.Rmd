@@ -7,4 +7,35 @@ editor: visual
 
 ## Introduction
 
-##
+## Step 2. Assembly
+
+Make a directory called flye.
+```bash
+mkdir flye
+```
+
+Into flye, make a symbolic link to the bbd read data
+```bash
+ln -s /pvol/data/metagenome_assembly/bbd_0.1.fastq.gz .
+```
+
+Make a new she
+ll script called run_flye_bbd.sh and save it inside your flye directory
+```bash
+#!/bin/bash
+#SBATCH --time=720
+#SBATCH --ntasks=12 --mem=10gb
+
+echo "Starting flye bbd in $(pwd) at $(date)"
+
+flye --nano-hq ../Workshop4_marine_genomics/flye/bbd_0.1.fastq.gz --threads 12 --out-dir bbd --meta
+
+echo "Finished flye bbd in $(pwd) at $(date)"
+```
+
+Submit job
+```bash
+sbatch run_flye_bbd.sh
+```
+
+

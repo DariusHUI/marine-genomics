@@ -7,38 +7,38 @@ editor: visual
 
 ## Quarto
 
-This file contains the different steps used to complete Workshop 3.
-In this workshop we examined metagenome following these steps:
-1. Examine Reads
-2. Assembly
-3. Basic assembly QC
-4. Binning
-5. Bin assessment
+This file contains the different steps used to complete Workshop 3. In this workshop we examined metagenome following these steps: 1. Examine Reads 2. Assembly 3. Basic assembly QC 4. Binning 5. Bin assessment
 
 ## Step 1: Examine Reads
 
 Create new subdirectory called raw_reads and make a symbolic link to the raw reads file in this directory.
-```bash
+
+``` bash
 mkdir raw_data
 cd raw_data
 ln -s /pvol/data/metagenome_assembly/reads_R10_0.5.fastq.gz raw_reads.fastq.gz
 ```
 
-```bash
+``` bash
 cd ..
 ```
 
 Check that your files are correct by using the ls command
-```bash
+
+``` bash
 ls -lR .
 ```
 
 ### Read Length Distribution
+
 Examine the read length distribution in our input data
-```bash
+
+``` bash
 zcat raw_data/raw_reads.fastq.gz | head -n 40000 | bioawk -c fastx '{print $name,length($seq)}' > read_lengths.txt
 ```
+
 create a plot to visualise these read lengths
+
 ```{r plot lenghts}
 library(tidyverse)
 
@@ -50,9 +50,8 @@ ggplot(rl_data, aes(x=length/1000)) +
 ```
 
 ### Calculating read N50
-Step 1: Rank all reads from longest to shortest
-Step 2: Create a new column with the cumulative sum of read lengths (starting from longest read).
-Step 3: Find the read at which the cumulative sum surpasses 50% of the total read volume (ie total sum of all read lengths)
+
+Step 1: Rank all reads from longest to shortest Step 2: Create a new column with the cumulative sum of read lengths (starting from longest read). Step 3: Find the read at which the cumulative sum surpasses 50% of the total read volume (ie total sum of all read lengths)
 
 ```{r Calculating read N50}
 total_len <- sum(rl_data$length)
@@ -67,17 +66,19 @@ rl_data %>%
 ##Step 2: Assembly
 
 Make a flye directory in your project folder and change the directory to that file.
-```bash
+
+``` bash
 mkdir flye
 
 cd flye
 ```
 
-Run flye on the simulated data. 
+Run flye on the simulated data.
 
-1. Create a new shell script called run_flye.sh and save it in the flye directory
-2. Add the following code to your script (cut-paste)
-```bash
+1.  Create a new shell script called run_flye.sh and save it in the flye directory
+2.  Add the following code to your script (cut-paste)
+
+``` bash
 #!/bin/bash
 #SBATCH --time=360
 #SBATCH --ntasks=8 --mem=4gb
@@ -89,93 +90,104 @@ flye --nano-hq ../raw_data/raw_reads.fastq.gz --threads 8 --out-dir mock --meta
 echo "Finished flye in $(pwd) at $(date)"
 ```
 
-3. Submit your job using the sbatch command
-```bash
+3.  Submit your job using the sbatch command
+
+``` bash
 sbatch run_flye.sh
 ```
 
-4. Monitor the output
-```bash
+4.  Monitor the output
+
+``` bash
 tail -f slurm-375.out
 ```
-
 
 After flye is finished running we will compare these results with those of our newly assembled metagenome in Bandage.
 
 ##### Questions
-What is the size and coverage of the largest contig in the assembly?
-  (it is contig_41)
-  Largest size is 4681059 bp
-  Largest coverage (depth) is 21,0x
 
-Your assembly should contain at least one (probably several) large circular contigs. Based on size and coverage can you guess which contig corresponds to the genome of the most abundant species in our mock community?
-  Geitlerinema sp. PCC 7407
+What is the size and coverage of the largest contig in the assembly? (it is contig_41) Largest size is 4681059 bp Largest coverage (depth) is 21,0x
+
+Your assembly should contain at least one (probably several) large circular contigs. Based on size and coverage can you guess which contig corresponds to the genome of the most abundant species in our mock community? Geitlerinema sp. PCC 7407
 
 #### Chromosome lengths and GC content in the reference data
 
 Create a new plain text file in rstudio and paste this code into it.
-```bash
+
+``` bash
 # Bioawk script for calculating gc and printing name,length,size
 BEGIN {
-	OFS="\t"
+    OFS="\t"
 }
 
 {
-	l=length($seq)
-	ngc=gsub("[cgCG]","",$seq)
-	nat=gsub("[taTA]","",$seq)
-	print $name,l,ngc/(ngc+nat)
+    l=length($seq)
+    ngc=gsub("[cgCG]","",$seq)
+    nat=gsub("[taTA]","",$seq)
+    print $name,l,ngc/(ngc+nat)
 }
 ```
 
 Look at the reference genomes
-```bash
+
+``` bash
 ls /pvol/data/mg/refs/*.fna
 ```
 
 Test your awk program by using it to print the GC content and contig lengths for all chromosomes in these files
-```bash
+
+``` bash
 cat /pvol/data/mg/refs/*.fna | bioawk -c fastx -f gc.awk
 ```
 
 ##### Question
+
 Locate two circular chromosomes for Vibrio alfacsensis in bandage. Use the outputs from gc.awk to help with this.
 
 ## Step 3
 
 Make a new directory and change into it.
-```bash
+
+``` bash
 mkdir assembly_check
 cd assembly_check
 ```
+
 Use your gc.awk script to print GC and lengths for the assembly
-```bash
+
+``` bash
 cat ../flye/mock/assembly.fasta | bioawk -c fastx -f ../gc.awk 
 ```
+
 Run the command again but this time send outputs to a file called assembly.gc.tsv.
-```bash
+
+``` bash
 cat ../mock/assembly.fasta | bioawk -c fastx -f ../gc.awk > assembly.gc.tsv
 ```
 
 Read assembly.gc.tsv and coverage depth in the assembly_info.txt file and join them together using R.
+
 ```{r}
 gc <- read_tsv("flye/assembly_check/assembly.gc.tsv",col_names = c("#seq_name","length","GC"))
 info <- read_tsv("flye/mock/assembly_info.txt") 
 ```
 
 Since both datasets have a #seq_name column we can join them easily as follows
+
 ```{r}
 gc_info <- info %>% 
   left_join(gc)
 ```
 
 histogram
+
 ```{r}
 gc_info %>% 
   ggplot(aes(x=GC)) + geom_histogram() + ylab("Number of contigs")
 ```
 
 A plot of GC vs coverage helps to identify clusters that have similar values for both these parameters. In making this plot we first filter the data to remove contigs with unrealistically high GC content and very high coverage depth (probably repeats)
+
 ```{r}
 gc_info %>% 
   filter(GC<0.8) %>% 
@@ -184,8 +196,8 @@ gc_info %>%
 ```
 
 ##### Question
-In the plot of GC versus coverage there is a cluster of contigs with high GC content (>60%) and coverage depth around 7.5x. Which species are these likely to belong to?
 
+In the plot of GC versus coverage there is a cluster of contigs with high GC content (\>60%) and coverage depth around 7.5x. Which species are these likely to belong to?
 
 ```{r}
 library(ggrepel)
@@ -197,77 +209,90 @@ gc_info %>%
 
 #### Assembly size vs reference size
 
-```bash
+``` bash
 cd
 cd marine-genomics/Workshop3_metasm
 ```
+
 Firstly lets calculate the total length of our reference sequences. This command builds on one we ran earlier to list the size and GC content of reference chromosomes, but this time we have added another very simple awk program to take the sum of the second column.
-```bash
+
+``` bash
 cat /pvol/data/mg/refs/*.fna | bioawk -c fastx -f gc.awk | awk '{sum+=$2}END{print sum}'
 ```
+
 total length of the reference is around 24Mb.
 
 ##### Question
-Calculate the total length of your assembly using R by taking the sum of the contig lengths column. What proportion of the reference sequence does this represent?
 
+Calculate the total length of your assembly using R by taking the sum of the contig lengths column. What proportion of the reference sequence does this represent?
 
 ### Step 4: Binning
 
 First create a directory for our binning work and change to it
-```bash
+
+``` bash
 cd ..
 mkdir metabat
 cd metabat
 ```
+
 Prepare an input file summarising read depth information for all contigs
-```bash
+
+``` bash
 cat ../flye/mock/assembly_info.txt  | grep -v '#' | awk '{OFS="\t";print $1,$3}' > depths.txt
 ```
 
 Next we need to create a new version of the assembly file in which the contigs have the same order as those in the depths.txt file.
-```bash
+
+``` bash
 cat depths.txt | awk '{print $1}' | xargs samtools faidx ../flye/mock/assembly.fasta > assembly_ordered.fasta
 ```
 
 Finally, run metabat as follows
-```bash
+
+``` bash
 metabat2 -i assembly_ordered.fasta -a depths.txt --cvExt -o bins/metabat --seed 5
 ```
-Metabat has grouped contigs into 5 bins 
+
+Metabat has grouped contigs into 5 bins
 
 To quickly inspect which contigs were grouped into which bin we can just use a grep command like this
 
-```bash
+``` bash
 grep '>' bins/*
 ```
 
 ### Step 5: Check bin quality with checkM
+
 In this step we will use a program called checkM to assess the quality of our bins. Remember that each bin generated by metabat should represent a single species or strain within our community. Our goal is to create bins in which;
 
-1. The sequences within the bin contain the complete sequence for this organism.
-2. The sequences within the bin all come from the same organism and are not contaminated with sequences from other taxa.
+1.  The sequences within the bin contain the complete sequence for this organism.
+2.  The sequences within the bin all come from the same organism and are not contaminated with sequences from other taxa.
 
 Create a working directory for running checkM and change into it
-```bash
+
+``` bash
 cd ~/marine-genomics/Workshop3_metasm
 mkdir checkm
 cd checkm
 ```
 
 Firstly we prepare inputs for checkM. We copy over the bins from metabat
-```bash
+
+``` bash
 mkdir bins
 cp ../metabat/bins/metabat.*.fa bins/
 ```
 
-We need to extract this contig from our assembly and include it with our metabat bins.
-biggest contig is contig_41
-```bash
+We need to extract this contig from our assembly and include it with our metabat bins. biggest contig is contig_41
+
+``` bash
 samtools faidx ../flye/mock/assembly.fasta contig_39 > bins/contig_41.fa
 ```
 
 Create a new file within your checkm directory and name it run_checkm.sh. Copy the following code into your run_checkm.sh file
-```bash
+
+``` bash
 #!/bin/bash
 #SBATCH --time=60
 #SBATCH --ntasks=4 --mem=40gb
@@ -283,21 +308,19 @@ echo "Finished checkm in $(pwd) at $(date)"
 ```
 
 Submit your job with
-```bash
+
+``` bash
 sbatch run_checkm.sh
 ```
+
 And monitor progress with
-```bash
+
+``` bash
 tail -f slurm-XXX.out
 ```
 
 Once checkm has finished take a look at the results file, checkm_results.txt
 
 ##### Question
-Which bin has the highest level of contamination? Why do you think this might be?
-    metabat.5 has the highest level of contamination.
-    
 
-
-
-
+Which bin has the highest level of contamination? Why do you think this might be? metabat.5 has the highest level of contamination.
