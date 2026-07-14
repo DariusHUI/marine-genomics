@@ -1,0 +1,14 @@
+---
+title: "02_checkm"
+author: "Darius HUISMAN"
+date: "2026-07-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+##
