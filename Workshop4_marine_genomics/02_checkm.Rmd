@@ -59,3 +59,141 @@ sbatch run_checkm_bbd.sh
 ```
 (job 536)
 
+
+## Step 5. Select bins based on checkm results
+
+Set directory to checkm file
+```bash
+cd ~/marine-genomics/Workshop4_marine_genomics/checkm
+```
+
+view the results (checkm_results_bbd.txt) in the terminal using head
+```bash
+head checkm_results_bbd.txt 
+```
+view more results
+```bash
+head -n 20 checkm_results_bbd.txt 
+```
+
+Extract the bin IDs for these using awk
+```bash
+cat checkm_results_bbd.txt | awk '$13>15'
+```
+Just want the bin ID 
+```bash
+cat checkm_results_bbd.txt | awk '$13>15{print $1}'
+```
+Send the output to another file for later steps
+```bash
+cat checkm_results_bbd.txt | awk '$13>15{print $1}' > bbd_topbins.txt
+```
+
+
+## Step 6. Perform taxonomic classification with gtdbtk
+
+Create a folder for gtdbtk in the top level of the workshop file (Workshop4_marine_genomics)
+```bash
+cd ~/marine-genomics/Workshop4_marine_genomics
+mkdir gtdbtk
+cd gtdbtk
+```
+create a subfolder within the gtdbtk folder called genomes
+```bash
+mkdir genomes
+```
+
+Iterate over our list of topbins. 
+(For each of the topbins we want to copy a file corresponding to that bin into our genomes folder.)
+First just get the while loop working
+```bash
+while read bin;do echo $bin;done < ../checkm/bbd_topbins.txt
+```
+Turn this bin name into a path specifying the fasta file for the bin. So for every bin we need to prepend the path to its folder ../metabat/bins_bbd/ and then append the file extension .fa
+```bash
+while read bin;do echo "../metabat/bins_bbd/${bin}.fa";done < ../checkm/bbd_topbins.txt
+```
+Ready to perform the copy
+```bash
+while read bin;do cp "../metabat/bins_bbd/${bin}.fa" genomes;done < ../checkm/bbd_topbins.txt
+```
+Check that it worked by listing files within the genomes directory. (should see one file for each of the bins)
+```bash
+ls genomes
+```
+
+Create a blank shell script file and save it inside your gtdbtk directory, named run_gtdbtk.sh
+```bash
+#!/bin/bash
+#SBATCH --time=60
+#SBATCH --ntasks=2 --mem=24gb
+
+echo "Starting gtdbtk in $(pwd) at $(date)"
+
+shopt -s expand_aliases
+alias gtdbtk='apptainer run -B /pvol:/pvol,/pvol/data/mg/gtdbtkdata/release207_v2/:/refdata /pvol/data/sif/gtdbtk.sif'
+
+gtdbtk classify_wf -x fa --cpus 2 --genome_dir genomes --out_dir out --skip_ani_screen
+
+echo "Finished gtdbtk in $(pwd) at $(date)"
+```
+
+Submit job
+```bash
+sbatch run_gtdbtk.sh
+```
+
+
+## Step 7. Find and annotate genes with prokka
+
+Create a directory for our prokka work at the top of the workshop file (Workshop4_marine_genomics), and change to it.
+```bash
+cd ~/marine-genomics/Workshop4_marine_genomics
+mkdir prokka
+cd prokka
+```
+
+Find out the first bin ID in the list.
+```bash
+head -n 1 ../checkm/bbd_topbins.txt
+```
+first bin is:    8!!!!!8!88!!888!
+
+Run prokka for that single bin
+```bash
+bin=metabat.5
+prokka --outdir $bin --prefix $bin  ../metabat/bins_bbd/${bin}.fa
+```
+
+List the contents of this folder.
+```bash
+ls metabat.5
+```
+
+Run prokka on all the metagenomes.
+
+Create a new blank text file (called it run_prokka.sh) and save it in the prokka directory.
+```bash
+#!/bin/bash
+#SBATCH --time=60
+#SBATCH --ntasks=2 --mem=2gb
+
+echo "Starting prokka in $(pwd) at $(date)"
+
+shopt -s expand_aliases
+alias prokka='apptainer run -B /pvol/:/pvol /pvol/data/sif/prokka.sif prokka'
+
+while read bin;do 
+  prokka --outdir $bin --prefix $bin "../metabat/bins_bbd/${bin}.fa";
+done < ../checkm/bbd_topbins.txt
+
+echo "Finished prokka in $(pwd) at $(date)"
+```
+
+Submit job
+```bash
+sbatch run_prokka.sh
+```
+
+
+
