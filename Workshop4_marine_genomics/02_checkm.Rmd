@@ -11,4 +11,26 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-##
+## Step 4. Check bin quality with checkm
+
+cd to the top level of the workshop file (Workshop4_marine_genomics)
+```bash
+cd ~/marine-genomics/Workshop4_marine_genomics
+```
+
+Make a new directory for checkm and cd into it
+```bash
+mkdir checkm
+cd checkm
+```
+
+Display the lengths of all contigs sorted from shortest to longest.
+```bash
+cat ../flye/bbd/assembly.fasta | bioawk -c fastx '{print length($seq),$name}' | sort -n
+```
+
+
+
+
+
+

@@ -11,4 +11,34 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-##
+## Step 3. Binning with metadata
+
+cd to the top level of the workshop file (Workshop4_marine_genomics)
+```bash
+cd ~/marine-genomics/Workshop4_marine_genomics
+```
+
+Make a metabat directory
+```bash
+mkdir metabat
+cd metabat
+```
+
+Extract depth information
+```bash
+cat ../flye/bbd/assembly_info.txt  | grep -v '#' | awk '{OFS="\t";print $1,$3}' > depths_bbd.txt
+```
+
+Reorder contigs based on depth
+```bash
+cat depths_bbd.txt | awk '{print $1}' | xargs samtools faidx ../flye/bbd/assembly.fasta > assembly_bbd_ordered.fasta
+```
+
+Run metabat
+```bash
+metabat2 -i assembly_bbd_ordered.fasta -a depths_bbd.txt --cvExt -o bins_bbd/metabat --seed 5
+```
+
+
+
+
