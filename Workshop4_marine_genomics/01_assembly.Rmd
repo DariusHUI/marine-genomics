@@ -23,8 +23,7 @@ Into flye, make a symbolic link to the bbd read data
 ln -s /pvol/data/metagenome_assembly/bbd_0.1.fastq.gz .
 ```
 
-Make a new she
-ll script called run_flye_bbd.sh and save it inside your flye directory
+Make a new shell script called run_flye_bbd.sh and save it inside your flye directory
 ```bash
 #!/bin/bash
 #SBATCH --time=720

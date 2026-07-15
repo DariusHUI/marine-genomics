@@ -28,9 +28,34 @@ Display the lengths of all contigs sorted from shortest to longest.
 ```bash
 cat ../flye/bbd/assembly.fasta | bioawk -c fastx '{print length($seq),$name}' | sort -n
 ```
+longest contig is contig_108
 
+Once you have found the longest contig substitute its name instead of contig_XX in the code below.
+```bash
+mkdir bins_bbd
+cp ../metabat/bins_bbd/*.fa bins_bbd/
+samtools faidx ../flye/bbd/assembly.fasta contig_108 > bins_bbd/contig_XX.fa
+```
 
+create a slurm script for your checkm run
+```bash
+#!/bin/bash
+#SBATCH --time=60
+#SBATCH --ntasks=6 --mem=10gb
 
+echo "Starting checkm in $(pwd) at $(date)"
 
+shopt -s expand_aliases
+alias checkm='apptainer run -B /pvol/:/pvol /pvol/data/sif/checkm.sif checkm'
 
+checkm lineage_wf bins_bbd out -t 4 -x fa -f checkm_results_bbd.txt
+
+echo "Finished checkm in $(pwd) at $(date)"
+```
+
+Submit your checkm job like this
+```bash
+sbatch run_checkm_bbd.sh
+```
+(job 536)
 
