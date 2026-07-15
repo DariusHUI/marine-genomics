@@ -57,7 +57,7 @@ Submit your checkm job like this
 ```bash
 sbatch run_checkm_bbd.sh
 ```
-(job 536)
+(job 558)
 
 
 ## Step 5. Select bins based on checkm results
@@ -194,6 +194,94 @@ Submit job
 ```bash
 sbatch run_prokka.sh
 ```
+
+
+## Step 8. Infer metabolic pathways
+
+Create a directory for minpath results at the top of the workshop file (Workshop4_marine_genomics), and change into it.
+```bash
+cd ~/marine-genomics/Workshop4_marine_genomics
+mkdir minpath
+cd minpath
+```
+
+Look at the .tsv file for a single bin.
+```bash
+head ../prokka/metabat.5/metabat.5.tsv
+```
+
+Transform the tsv into a format using awk to only keep a unique ID for each gene (column 1) and its EC number (column 5).
+```bash
+head ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '{print $1,$5}'
+```
+Filter the output to only include lines with an EC number.
+```bash
+head ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '$5{print $1,$5}'
+```
+Ensure that the output is tab separated and also remove the header line
+```bash
+head ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus'
+```
+Change head to cat to include all genes
+```bash
+cat ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus'
+```
+Send the output to a file so that it can be used as input to minpath
+```bash
+cat ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus' > metabat.5.ec
+```
+Run minpath on this file as follows
+```bash
+minpath -ec metabat.5.ec -report metabat.5.ec.report -details metabat.5.ec.details
+```
+Take a look at the top few lines of output
+```bash
+head metabat.5.ec.report
+```
+
+When your job is done look at the output log file
+```bash
+tail ../prokka/slurm-XXX.out
+```
+
+When prokka is done, run the following code to prepare minpath inputs for all bins.
+```bash
+while read bin;do 
+  cat ../prokka/$bin/${bin}.tsv | awk -F '\t' '$5{printf("%s\t%s\n", $1,$5)}' | grep -v '^locus' > ${bin}.ec 
+done < ../checkm/bbd_topbins.txt
+```
+
+Run minpath on every bin.
+```bash
+while read bin;do 
+  minpath -ec ${bin}.ec -report ${bin}.ec.report -details ${bin}.ec.details
+done < ../checkm/bbd_topbins.txt
+```
+
+Use the following command to search for the 'PWY-101' pathway across all the bins
+```bash
+grep 'PWY-101' *.ec.report
+```
+### Question 4.1
+  How many bins contain at least one gene from this pathway?
+  Which bin has all of the genes (ie a complete pathway)?
+  
+Cross reference results with the output from gtdbtk to see the taxonomy of bins containing this pathway. 
+Note that you will need to modify the commands below to use the correct bin numbers (these will be different for everyone).
+```bash
+grep 'metabat.26' ../gtdbtk/out/gtdbtk.bac120.summary.tsv
+```
+### Question 4.2
+  How many bins contain the pathway PWY-5360?
+  What family (in a taxonomic sense) do these bins belong to?
+
+
+
+
+
+
+
+
 
 
 

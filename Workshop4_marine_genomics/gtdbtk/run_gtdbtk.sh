@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --time=60
-#SBATCH --ntasks=2 --mem=24gb
+#SBATCH --ntasks=2 --mem=40gb
 
 echo "Starting gtdbtk in $(pwd) at $(date)"
 
