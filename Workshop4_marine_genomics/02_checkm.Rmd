@@ -57,7 +57,6 @@ Submit your checkm job like this
 ```bash
 sbatch run_checkm_bbd.sh
 ```
-(job 558)
 
 
 ## Step 5. Select bins based on checkm results
@@ -142,7 +141,7 @@ Submit job
 ```bash
 sbatch run_gtdbtk.sh
 ```
-
+(job 575)
 
 ## Step 7. Find and annotate genes with prokka
 
@@ -157,7 +156,7 @@ Find out the first bin ID in the list.
 ```bash
 head -n 1 ../checkm/bbd_topbins.txt
 ```
-first bin is:    8!!!!!8!88!!888!
+first bin is: contig_108
 
 Run prokka for that single bin
 ```bash
