@@ -286,7 +286,10 @@ grep 'PWY-5360' *.ec.report
   What family (in a taxonomic sense) do these bins belong to?
     Roseofilum
 
-
+Visualise results table for gtdbtk
+```{r}
+gtdbtk.results <- read_tsv("gtdbtk/out/gtdbtk.bac120.summary.tsv")
+```
 
 
 
