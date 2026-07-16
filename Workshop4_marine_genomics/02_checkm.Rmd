@@ -280,16 +280,18 @@ Use the following command to search for the 'PWY-101' pathway across all the bin
 grep 'PWY-5360' *.ec.report
 ```
 
-### Question 4.2
-  How many bins contain the pathway PWY-5360?
-    One
-  What family (in a taxonomic sense) do these bins belong to?
-    Roseofilum
-
 Visualise results table for gtdbtk
 ```{r}
 gtdbtk.results <- read_tsv("gtdbtk/out/gtdbtk.bac120.summary.tsv")
 ```
+
+### Question 4.2
+  How many bins contain the pathway PWY-5360?
+    One (metabat.44)
+  What family (in a taxonomic sense) do these bins belong to?
+    Arcobacteraceae (genus Halarcobacter)
+
+
 
 
 
