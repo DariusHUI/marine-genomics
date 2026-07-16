@@ -141,7 +141,7 @@ Submit job
 ```bash
 sbatch run_gtdbtk.sh
 ```
-(job 575)
+
 
 ## Step 7. Find and annotate genes with prokka
 
@@ -160,13 +160,13 @@ first bin is: contig_108
 
 Run prokka for that single bin
 ```bash
-bin=metabat.5
+bin=contig_108
 prokka --outdir $bin --prefix $bin  ../metabat/bins_bbd/${bin}.fa
 ```
 
 List the contents of this folder.
 ```bash
-ls metabat.5
+ls contig_108
 ```
 
 Run prokka on all the metagenomes.
@@ -193,6 +193,7 @@ Submit job
 ```bash
 sbatch run_prokka.sh
 ```
+(job 605)
 
 
 ## Step 8. Infer metabolic pathways
@@ -206,41 +207,41 @@ cd minpath
 
 Look at the .tsv file for a single bin.
 ```bash
-head ../prokka/metabat.5/metabat.5.tsv
+head ../prokka/contig_108/contig_108.tsv
 ```
 
 Transform the tsv into a format using awk to only keep a unique ID for each gene (column 1) and its EC number (column 5).
 ```bash
-head ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '{print $1,$5}'
+head ../prokka/contig_108/contig_108.tsv | awk -F '\t' '{print $1,$5}'
 ```
 Filter the output to only include lines with an EC number.
 ```bash
-head ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '$5{print $1,$5}'
+head ../prokka/contig_108/contig_108.tsv | awk -F '\t' '$5{print $1,$5}'
 ```
 Ensure that the output is tab separated and also remove the header line
 ```bash
-head ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus'
+head ../prokka/contig_108/contig_108.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus'
 ```
 Change head to cat to include all genes
 ```bash
-cat ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus'
+cat ../prokka/contig_108/contig_108.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus'
 ```
 Send the output to a file so that it can be used as input to minpath
 ```bash
-cat ../prokka/metabat.5/metabat.5.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus' > metabat.5.ec
+cat ../prokka/contig_108/contig_108.tsv | awk -F '\t' '$5{OFS="\t";print $1,$5}' | grep -v '^locus' > contig_108.ec
 ```
 Run minpath on this file as follows
 ```bash
-minpath -ec metabat.5.ec -report metabat.5.ec.report -details metabat.5.ec.details
+minpath -ec contig_108.ec -report contig_108.ec.report -details contig_108.ec.details
 ```
 Take a look at the top few lines of output
 ```bash
-head metabat.5.ec.report
+head contig_108.ec.report
 ```
 
 When your job is done look at the output log file
 ```bash
-tail ../prokka/slurm-XXX.out
+tail ../prokka/slurm-605.out
 ```
 
 When prokka is done, run the following code to prepare minpath inputs for all bins.
@@ -263,17 +264,27 @@ grep 'PWY-101' *.ec.report
 ```
 ### Question 4.1
   How many bins contain at least one gene from this pathway?
+    Five
   Which bin has all of the genes (ie a complete pathway)?
+    metabat.28
   
 Cross reference results with the output from gtdbtk to see the taxonomy of bins containing this pathway. 
 Note that you will need to modify the commands below to use the correct bin numbers (these will be different for everyone).
 ```bash
-grep 'metabat.26' ../gtdbtk/out/gtdbtk.bac120.summary.tsv
+grep 'metabat.28' ../gtdbtk/out/gtdbtk.bac120.summary.tsv
 ```
+The second pathway is a little less obviously named. It is called superpathway of tetrathionate reduction and has metacyc code PWY-5360. This pathway is important because it includes enzymes required to reduce sulfite to hydrogen sulfide. Note that sulfite acts as the terminal electron acceptor in this pathway, however, in a broader sense the term “sulfate reducing” refers to micro-organisms that can produce sulfide from a range of oxidised sulfur compounds.
+
+Use the following command to search for the 'PWY-101' pathway across all the bins
+```bash
+grep 'PWY-5360' *.ec.report
+```
+
 ### Question 4.2
   How many bins contain the pathway PWY-5360?
+    One
   What family (in a taxonomic sense) do these bins belong to?
-
+    Roseofilum
 
 
 
