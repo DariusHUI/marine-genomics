@@ -14,17 +14,17 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Step 2. Assembly
 
 Make a directory called flye.
-```bash
+``` bash
 mkdir flye
 ```
 
 Into flye, make a symbolic link to the bbd read data
-```bash
+``` bash
 ln -s /pvol/data/metagenome_assembly/bbd_0.1.fastq.gz .
 ```
 
-Make a new shell script called run_flye_bbd.sh and save it inside your flye directory
-```bash
+Make a new shell script called run_flye_bbd.sh and save it inside your flye directory. 
+``` bash
 #!/bin/bash
 #SBATCH --time=720
 #SBATCH --ntasks=12 --mem=10gb
@@ -36,9 +36,7 @@ flye --nano-hq ../Workshop4_marine_genomics/flye/bbd_0.1.fastq.gz --threads 12 -
 echo "Finished flye bbd in $(pwd) at $(date)"
 ```
 
-Submit job
-```bash
+Submit job.
+``` bash
 sbatch run_flye_bbd.sh
 ```
-
-
